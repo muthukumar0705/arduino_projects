@@ -1,0 +1,106 @@
+// ---------------------------------------------------------------- //
+// Arduino Radar
+// writen by Muthukumar Mugunath
+// ---------------------------------------------------------------- //
+
+#include <math.h>
+#include <Servo.h>
+
+Servo myservo;  // create servo object to control a servo
+// twelve servo objects can be created on most boards
+
+#define trigPinHC1 2
+#define echoPinHC1 3
+#define enA 4
+#define in1 5
+#define in2 6
+#define servo_ultra 7
+#define LED 8
+#define AttackingLen 30
+#define detectingLen 50
+
+int offset = 10;
+int numOfIteration = 180/offset;
+int k = 0;
+bool increment = true;
+
+
+void setup() {
+  pinMode(trigPinHC1, OUTPUT);  // Sets the trigPin as an OUTPUT
+  pinMode(echoPinHC1, INPUT);   // Sets the echoPin as an INPUT
+  Serial.begin(9600);           // // Serial Communication is starting with 9600 of baudrate speed
+  pinMode(enA, OUTPUT);
+  pinMode(in1, OUTPUT);
+  pinMode(in2, OUTPUT);
+  pinMode(LED, OUTPUT);
+  analogWrite(enA, 255);
+  myservo.attach(servo_ultra);  // attaches the servo on pin 7 to the servo object
+}
+
+void loop() {
+  // Clears the trigPin condition
+  digitalWrite(LED, LOW);
+  stop();
+  scaningObject(k);
+  if (increment) {
+    k = k + 1;
+  } else {
+    k = k - 1;
+  }
+
+  if (k == 0) {
+    increment = true;
+  } else if (k == numOfIteration) {
+    increment = false;
+  }
+  delay(200);
+}
+
+void scaningObject(int i) {
+  setServo(i * offset);
+  float distanceHC1 = getdistance(trigPinHC1, echoPinHC1);
+  delay(300);
+
+  if (distanceHC1 > 10) {
+     if (distanceHC1 <= AttackingLen) {
+      Serial.println(distanceHC1 <= AttackingLen);
+      digitalWrite(LED, HIGH);
+      forward();
+      delay(2000);
+      stop();
+    } else if (distanceHC1 <= detectingLen) {
+      digitalWrite(LED, HIGH);
+    }
+  }
+}
+
+void setServo(int pos) {
+  myservo.write(pos);  // tell servo to go to position in variable 'pos'
+}
+
+float getdistance(int trig, int echo) {
+  long duration;  // variable for the duration of sound wave travel
+  float distance;
+  digitalWrite(trig, LOW);
+  delayMicroseconds(2);
+  // Sets the trigPin HIGH (ACTIVE) for 10 microseconds
+  digitalWrite(trig, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trig, LOW);
+  // Reads the echoPin, returns the sound wave travel time in microseconds
+  duration = pulseIn(echo, HIGH);
+  // Calculating the distanceR
+  distance = duration * 0.034 / 2;  // Speed of sound wave divided by 2 (go and back)
+  // Displays the distanceR on the Serial Monitor
+  return distance;
+}
+
+void forward() {
+  digitalWrite(in1, HIGH);
+  digitalWrite(in2, LOW);
+}
+
+void stop() {
+  digitalWrite(in1, LOW);
+  digitalWrite(in2, LOW);
+}
