@@ -1,7 +1,7 @@
 
 # Ground Radar
 
-Using ultra sonic sensor code able to detect the objects enter into your area and able to attack the objects
+Using ultra sonic sensor able to detect the objects enter into your area and attack the objects
 
 # Import Json
 Please import the Ground Radar.json file into https://simulation.iitbx.in/arduino/ for connections and requirements
